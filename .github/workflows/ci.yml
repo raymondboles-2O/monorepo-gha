@@ -1,0 +1,69 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/next/**"
+      - "apps/nuxt/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "apps/next/**"
+      - "apps/nuxt/**"
+  workflow_dispatch:
+    inputs:
+      app:
+        description: "Which app to build (all, next, nuxt)"
+        required: false
+        default: "all"
+
+jobs:
+  filter:
+    name: Detect changed paths
+    runs-on: ubuntu-latest
+    outputs:
+      next: ${{ steps.detect.outputs.next }}
+      nuxt: ${{ steps.detect.outputs.nuxt }}
+    steps:
+      - name: Checkout (full)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: detect
+        name: Detect changed files
+        run: bash .github/scripts/detect-changes.sh "${{ github.repository }}" "${{ github.event.before }}" "${{ github.sha }}"
+
+        
+  build-next:
+    name: Build apps/next
+    needs: filter
+    runs-on: ubuntu-latest
+    if: ${{ needs.filter.outputs.next == 'true' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.app == 'next' || github.event.inputs.app == 'all')) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run build template for next
+        uses: ./.github/templates/build-template
+        with:
+          app_dir: apps/next
+          node_version: '22'
+
+  build-nuxt:
+    name: Build apps/nuxt
+    needs: filter
+    runs-on: ubuntu-latest
+    if: ${{ needs.filter.outputs.nuxt == 'true' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.app == 'nuxt' || github.event.inputs.app == 'all')) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run build template for nuxt
+        uses: ./.github/templates/build-template
+        with:
+          app_dir: apps/nuxt
+          node_version: '22'
