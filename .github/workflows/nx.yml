@@ -1,0 +1,24 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "org"
+
+jobs:
+  nx:
+    name: Build apps/nuxt
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - uses: mansagroup/nrwl-nx-action@v3
+      with:
+        targets: lint,test,build
+        affected: 'true'
+        # all: 'true'
+        # projects: frontend,backend
