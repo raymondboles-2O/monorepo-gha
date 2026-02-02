@@ -1,5 +1,6 @@
 {
   "name": "@org/shop-e2e",
+  "description": "test",
   "version": "0.0.1",
   "private": true,
   "nx": {
