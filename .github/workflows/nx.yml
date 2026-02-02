@@ -1,0 +1,36 @@
+name: Continuous Integration
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "org/**"
+
+jobs:
+  ci-nx:
+    name: CI on nx apps
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+        shell: bash
+        working-directory: org
+        
+      - uses: mansagroup/nrwl-nx-action@v3
+        with:
+          workingDirectory: org
+          targets: lint,test,build
+          affected: "true"
+          # all: 'true'
+          # projects: frontend,backend
